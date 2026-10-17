@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import socket from '../socket';
 import './Chat.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Chat({ username }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -28,7 +30,7 @@ export default function Chat({ username }) {
 
   // Load message history on mount
   useEffect(() => {
-    fetch('http://localhost:5000/api/messages')
+    fetch(`${API_URL}/api/messages`)
       .then((res) => {
         if (!res.ok) throw new Error('Server error');
         return res.json();
@@ -52,6 +54,16 @@ export default function Chat({ username }) {
     return () => socket.off('newMessage', handler);
   }, []);
 
+  // Listen for chat cleared event
+  useEffect(() => {
+    const handler = () => {
+      setMessages([]);
+      messageIds.current.clear();
+    };
+    socket.on('chatCleared', handler);
+    return () => socket.off('chatCleared', handler);
+  }, []);
+
   // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,6 +76,15 @@ export default function Chat({ username }) {
 
     socket.emit('sendMessage', { sender: username, text: trimmed });
     setInput('');
+  };
+
+  const clearChat = async () => {
+    if (!window.confirm('Clear all messages? This cannot be undone.')) return;
+    try {
+      await fetch(`${API_URL}/api/messages`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Failed to clear chat:', err);
+    }
   };
 
   const formatTime = (ts) => {
@@ -82,6 +103,9 @@ export default function Chat({ username }) {
           Logged in as <strong>{username}</strong>
           <span className={`status-dot ${connected ? 'online' : 'offline'}`} />
         </span>
+        <button className="clear-chat-btn" onClick={clearChat} disabled={!connected}>
+          🗑️ Clear Chat
+        </button>
       </header>
 
       <div className="chat-messages">

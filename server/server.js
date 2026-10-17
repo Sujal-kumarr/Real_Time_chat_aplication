@@ -41,6 +41,17 @@ app.get('/api/messages', async (req, res) => {
   }
 });
 
+// REST endpoint — clear all messages
+app.delete('/api/messages', async (req, res) => {
+  try {
+    await Message.deleteMany({});
+    io.emit('chatCleared');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to clear messages' });
+  }
+});
+
 // Socket.IO
 io.on('connection', (socket) => {
   console.log(`🟢 User connected: ${socket.id}`);

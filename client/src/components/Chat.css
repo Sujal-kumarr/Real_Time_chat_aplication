@@ -21,6 +21,28 @@
   color: #fff;
 }
 
+.clear-chat-btn {
+  padding: 8px 16px;
+  background: transparent;
+  color: #f44336;
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.clear-chat-btn:hover:not(:disabled) {
+  background: #f44336;
+  color: #fff;
+}
+
+.clear-chat-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .chat-user {
   font-size: 0.85rem;
   color: #8888aa;
